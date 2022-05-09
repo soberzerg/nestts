@@ -23,11 +23,12 @@ describe('AuthController', () => {
     jwtService = module.get<JwtService>(JwtService);
 
     app = module.createNestApplication();
+    app.enableShutdownHooks();
     await app.init();
   });
 
   it(`/POST auth/login`, () => {
-    const payload = { ...user.toPlain(), sub: user.id };
+    const payload = { sub: user.id };
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
@@ -40,6 +41,22 @@ describe('AuthController', () => {
       .expect(201)
       .expect({
         access_token,
+      });
+  });
+
+  it(`/GET profile`, () => {
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+
+    return request(app.getHttpServer())
+      .get('/profile')
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(200)
+      .expect({
+        user: user.toPlain(),
       });
   });
 

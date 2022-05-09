@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './users.entity';
 
@@ -20,9 +20,19 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { ...user, sub: user.id };
+    const payload = { sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
+    };
+  }
+
+  async getUser(id: number) {
+    const user = await User.findOneBy({ id });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return {
+      user: user.toPlain(),
     };
   }
 }
