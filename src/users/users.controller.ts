@@ -6,15 +6,11 @@ import {
   Patch,
   Param,
   Delete,
-  Request,
-  HttpStatus,
-  HttpException,
 } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CheckPolicies } from '../auth/policies.guard';
+import { CheckPolicies, CheckPolicy } from '../auth/policies.guard';
 import { Action } from '../auth/actions';
 import { User } from '../auth/users.entity';
 
@@ -23,8 +19,11 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @CheckPolicies({ action: Action.Create, subject: User })
+  async create(@Body() body: object) {
+    const user = await this.usersService.create(body);
+
+    return { user: user.toPlain() };
   }
 
   @Get()
@@ -36,12 +35,10 @@ export class UsersController {
 
   @Get(':id')
   @CheckPolicies()
-  async findOne(@Param('id') id: string, @Request() req) {
+  async findOne(@Param('id') id: string, @CheckPolicy() check) {
     const user = await this.usersService.findOne(Number(id));
 
-    if (!req.user.ability.can(Action.Read, user)) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-    }
+    check(Action.Read, user);
 
     return { user: user.toPlain() };
   }

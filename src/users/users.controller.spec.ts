@@ -133,7 +133,7 @@ describe('UsersController', () => {
       .expect([user.toPlain(), user2.toPlain()]);
   });
 
-  it(`/GET /user/:id by user with read permission`, () => {
+  it(`/GET /users/:id by user with read permission`, () => {
     const permission = Permission.fromPlain({
       action: Action.Read,
       subject: 'User',
@@ -160,6 +160,68 @@ describe('UsersController', () => {
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
       .expect({ user: user.toPlain() });
+  });
+
+  it(`/POST /users by user without create permission`, () => {
+    const user = new User();
+    user.id = 5;
+    user.login = 'user5@user.com';
+    user.password = 'qwe123';
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+
+    const newUser = {
+      login: 'new-user@user.com',
+      password: 'qwe456',
+    };
+
+    return request(app.getHttpServer())
+      .post(`/users`)
+      .send(newUser)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(403);
+  });
+
+  it(`/POST /users by user with create permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.Create,
+      subject: 'User',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 6;
+    user.login = 'user6@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    const newUser = new User();
+    newUser.login = 'new-user2@user.com';
+    newUser.password = 'qwe456';
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+    jest.spyOn(usersService, 'create').mockResolvedValue(newUser);
+
+    return request(app.getHttpServer())
+      .post(`/users`)
+      .send(newUser.toPlain())
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          user: expect.objectContaining({ login: newUser.login }),
+        });
+      });
   });
 
   afterAll(async () => {

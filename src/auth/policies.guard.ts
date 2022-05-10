@@ -5,6 +5,9 @@ import {
   SetMetadata,
   applyDecorators,
   UseGuards,
+  createParamDecorator,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -46,3 +49,14 @@ export function CheckPolicies(...handlers: IPolicy[]) {
     return UseGuards(JwtAuthGuard);
   }
 }
+
+export const CheckPolicy = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const { user } = ctx.switchToHttp().getRequest();
+    return (action: string, subject: any) => {
+      if (!user.ability.can(action, subject)) {
+        throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      }
+    };
+  },
+);
