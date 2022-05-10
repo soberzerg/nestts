@@ -6,7 +6,6 @@ import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { jwtConstants } from './constants';
-import { CaslAbilityFactory } from './casl-ability.factory';
 
 @Module({
   imports: [
@@ -17,7 +16,7 @@ import { CaslAbilityFactory } from './casl-ability.factory';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, CaslAbilityFactory, LocalStrategy, JwtStrategy],
-  exports: [AuthService, CaslAbilityFactory],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

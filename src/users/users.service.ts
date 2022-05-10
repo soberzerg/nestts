@@ -13,8 +13,8 @@ export class UsersService {
     return User.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    return User.findOneBy({ id });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

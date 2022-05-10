@@ -6,6 +6,9 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthModule } from '../auth/auth.module';
 import { User } from '../auth/users.entity';
+import { Role } from '../auth/roles.entity';
+import { Permission } from '../auth/permissions.entity';
+import { Action } from '../auth/actions';
 
 describe('UsersController', () => {
   let app: INestApplication;
@@ -51,7 +54,7 @@ describe('UsersController', () => {
   it(`/GET /users by any user`, () => {
     const user = new User();
     user.id = 2;
-    user.login = 'user@user.com';
+    user.login = 'user2@user.com';
     user.password = 'qwe123';
 
     const payload = { sub: user.id };
@@ -65,6 +68,98 @@ describe('UsersController', () => {
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(403);
+  });
+
+  it(`/GET /users by user with read permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.Read,
+      subject: 'User',
+      ownerField: 'id',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 3;
+    user.login = 'user3@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+    jest.spyOn(usersService, 'findAll').mockResolvedValue([user]);
+
+    return request(app.getHttpServer())
+      .get('/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(403);
+  });
+
+  it(`/GET /users by user with list permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.List,
+      subject: 'User',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 4;
+    user.login = 'user4@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const user2 = new User();
+    user2.id = 5;
+    user2.login = 'user5@user.com';
+    user2.password = 'qwe123';
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+    jest.spyOn(usersService, 'findAll').mockResolvedValue([user, user2]);
+
+    return request(app.getHttpServer())
+      .get('/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(200)
+      .expect([user.toPlain(), user2.toPlain()]);
+  });
+
+  it(`/GET /user/:id by user with read permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.Read,
+      subject: 'User',
+      ownerField: 'id',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 5;
+    user.login = 'user5@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+
+    return request(app.getHttpServer())
+      .get(`/users/${user.id}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(200)
+      .expect({ user: user.toPlain() });
   });
 
   afterAll(async () => {

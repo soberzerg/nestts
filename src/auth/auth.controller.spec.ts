@@ -39,9 +39,7 @@ describe('AuthController', () => {
       .send({ username: user.login, password: user.password })
       .set('Accept', 'application/json')
       .expect(201)
-      .expect({
-        access_token,
-      });
+      .expect({ access_token });
   });
 
   it(`/GET profile`, () => {
@@ -55,9 +53,7 @@ describe('AuthController', () => {
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
-      .expect({
-        user: user.toPlain(),
-      });
+      .expect({ user: user.toPlain() });
   });
 
   afterAll(async () => {

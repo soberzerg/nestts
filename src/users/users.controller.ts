@@ -6,16 +6,17 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
+  Request,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
-import { Ability } from '@casl/ability';
 import { instanceToPlain } from 'class-transformer';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { PoliciesGuard, CheckPolicies } from '../auth/policies.guard';
+import { CheckPolicies } from '../auth/policies.guard';
 import { Action } from '../auth/actions';
+import { User } from '../auth/users.entity';
 
 @Controller('users')
 export class UsersController {
@@ -27,16 +28,22 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: Ability) => ability.can(Action.Read, 'User'))
+  @CheckPolicies({ action: Action.List, subject: User })
   async findAll() {
     const users = await this.usersService.findAll();
     return instanceToPlain(users);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @CheckPolicies()
+  async findOne(@Param('id') id: string, @Request() req) {
+    const user = await this.usersService.findOne(Number(id));
+
+    if (!req.user.ability.can(Action.Read, user)) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    return { user: user.toPlain() };
   }
 
   @Patch(':id')

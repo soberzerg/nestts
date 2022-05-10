@@ -1,51 +1,48 @@
-import { Ability } from '@casl/ability';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
   SetMetadata,
+  applyDecorators,
+  UseGuards,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { CaslAbilityFactory } from './casl-ability.factory';
-
-interface IPolicyHandler {
-  handle(ability: Ability): boolean;
-}
-
-type PolicyHandlerCallback = (ability: Ability) => boolean;
-
-export type PolicyHandler = IPolicyHandler | PolicyHandlerCallback;
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 export const CHECK_POLICIES_KEY = 'check_policy';
-export const CheckPolicies = (...handlers: PolicyHandler[]) =>
-  SetMetadata(CHECK_POLICIES_KEY, handlers);
+
+interface IPolicy {
+  action: string;
+  subject: any;
+}
 
 @Injectable()
 export class PoliciesGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private caslAbilityFactory: CaslAbilityFactory,
-  ) {}
+  constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const policyHandlers =
-      this.reflector.get<PolicyHandler[]>(
-        CHECK_POLICIES_KEY,
-        context.getHandler(),
-      ) || [];
+    const policies =
+      this.reflector.get<IPolicy[]>(CHECK_POLICIES_KEY, context.getHandler()) ||
+      [];
 
     const { user } = context.switchToHttp().getRequest();
-    const ability = await this.caslAbilityFactory.createForUser(user);
 
-    return policyHandlers.every((handler) =>
-      this.execPolicyHandler(handler, ability),
-    );
+    return policies.every((policy: IPolicy) => {
+      if (typeof policy.subject === 'function') {
+        return user.ability.can(policy.action, new policy.subject());
+      }
+      return user.ability.can(policy.action, policy.subject);
+    });
   }
+}
 
-  private execPolicyHandler(handler: PolicyHandler, ability: Ability) {
-    if (typeof handler === 'function') {
-      return handler(ability);
-    }
-    return handler.handle(ability);
+export function CheckPolicies(...handlers: IPolicy[]) {
+  if (handlers.length) {
+    return applyDecorators(
+      SetMetadata(CHECK_POLICIES_KEY, handlers),
+      UseGuards(JwtAuthGuard, PoliciesGuard),
+    );
+  } else {
+    return UseGuards(JwtAuthGuard);
   }
 }

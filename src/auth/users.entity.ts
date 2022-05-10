@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
+import { Ability } from '@casl/ability';
 import { DatabaseModel } from '../database/database.model';
 import { Role } from './roles.entity';
 
@@ -30,6 +31,7 @@ export class User extends DatabaseModel {
 
   @ManyToMany(() => Role)
   @JoinTable()
+  @Exclude({ toPlainOnly: true })
   roles: Promise<Role[]>;
 
   @CreateDateColumn()
@@ -40,6 +42,9 @@ export class User extends DatabaseModel {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @Exclude({ toPlainOnly: true })
+  ability: Ability;
 
   static async comparePassword(
     password: string,

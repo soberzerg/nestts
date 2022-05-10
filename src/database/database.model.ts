@@ -7,16 +7,16 @@ import {
 
 export class DatabaseModel extends BaseEntity {
   toPlain(options?: ClassTransformOptions): Record<string, any> {
-    return instanceToPlain(this, options);
+    return instanceToPlain(this, { ...options, excludePrefixes: ['__'] });
   }
 
-  static fromPlain<T, V>(
+  static fromPlain<T extends DatabaseModel, V>(
     this: {
       new (): T;
     } & typeof DatabaseModel,
     plain: V,
     options?: ClassTransformOptions,
-  ): DatabaseModel {
-    return plainToInstance(this, plain, options);
+  ): T {
+    return plainToInstance(this, plain, options) as T;
   }
 }
