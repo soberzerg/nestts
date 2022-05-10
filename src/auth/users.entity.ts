@@ -5,10 +5,13 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { DatabaseModel } from '../database/database.model';
+import { Role } from './roles.entity';
 
 @Entity()
 export class User extends DatabaseModel {
@@ -22,9 +25,22 @@ export class User extends DatabaseModel {
   @Exclude({ toPlainOnly: true })
   password: string;
 
-  @CreateDateColumn('timestamptz')
-  @UpdateDateColumn('timestamptz')
-  @DeleteDateColumn('timestamptz')
+  @Column({ default: 'FALSE' })
+  isSuperAdmin: boolean;
+
+  @ManyToMany(() => Role)
+  @JoinTable()
+  roles: Promise<Role[]>;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
+
   static async comparePassword(
     password: string,
     hash: string,

@@ -19,7 +19,7 @@ export class AuthService {
     return user;
   }
 
-  async getUser(id: number) {
+  async getUser(id: number): Promise<User | undefined> {
     const user = await User.findOneBy({ id });
     if (!user) {
       throw new UnauthorizedException();
