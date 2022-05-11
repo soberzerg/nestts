@@ -9,6 +9,7 @@ import { User } from '../auth/users.entity';
 import { Role } from '../auth/roles.entity';
 import { Permission } from '../auth/permissions.entity';
 import { Action } from '../auth/actions';
+import { DatabaseModule } from '../database/database.module';
 
 describe('UsersController', () => {
   let app: INestApplication;
@@ -17,7 +18,7 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule],
+      imports: [AuthModule, DatabaseModule],
       controllers: [UsersController],
       providers: [UsersService],
     }).compile();
@@ -224,7 +225,168 @@ describe('UsersController', () => {
       });
   });
 
-  afterAll(async () => {
+  it(`/PATCH /users/:id by user without update permission`, () => {
+    const user = new User();
+    user.id = 7;
+    user.login = 'user7@user.com';
+    user.password = 'qwe123';
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    const newLogin = 'user7@new-login.com';
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+    jest.spyOn(user, 'save').mockResolvedValue(user);
+
+    return request(app.getHttpServer())
+      .patch(`/users/${user.id}`)
+      .send({ login: newLogin })
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(403);
+  });
+
+  it(`/PATCH /users/:id by user with global update permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.Update,
+      subject: 'User',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 8;
+    user.login = 'user8@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const user2 = new User();
+    user2.id = 81;
+    user2.login = 'user81@user.com';
+    user2.password = 'qwe453';
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    const newLogin = 'user8@new-login.com';
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValueOnce(user);
+    jest.spyOn(User, 'findOneBy').mockResolvedValueOnce(user2);
+    jest.spyOn(user2, 'save').mockResolvedValue(user2);
+
+    return request(app.getHttpServer())
+      .patch(`/users/${user2.id}`)
+      .send({ login: newLogin })
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          user: expect.objectContaining({ id: user2.id, login: newLogin }),
+        });
+      });
+  });
+
+  it(`/PATCH /users/:id by user with self update permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.Update,
+      subject: 'User',
+      ownerField: 'id',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 9;
+    user.login = 'user9@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    const newLogin = 'user9@new-login.com';
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+    jest.spyOn(user, 'save').mockResolvedValue(user);
+
+    return request(app.getHttpServer())
+      .patch(`/users/${user.id}`)
+      .send({ login: newLogin })
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          user: expect.objectContaining({ id: 9, login: newLogin }),
+        });
+      });
+  });
+
+  it(`/DELETE /users/:id by user without delete permission`, () => {
+    const user = new User();
+    user.id = 10;
+    user.login = 'user7@user.com';
+    user.password = 'qwe123';
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
+
+    return request(app.getHttpServer())
+      .delete(`/users/${user.id}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(403);
+  });
+
+  it(`/DELETE /users/:id by user with global delete permission`, () => {
+    const permission = Permission.fromPlain({
+      action: Action.Delete,
+      subject: 'User',
+    });
+
+    const role = new Role();
+    role.permissions = [permission];
+
+    const user = new User();
+    user.id = 11;
+    user.login = 'user11@user.com';
+    user.password = 'qwe123';
+    user.roles = Promise.resolve([role]);
+
+    const user2 = new User();
+    user2.id = 12;
+    user2.login = 'user12@user.com';
+
+    const payload = { sub: user.id };
+    const access_token = jwtService.sign(payload);
+
+    jest.spyOn(User, 'findOneBy').mockResolvedValueOnce(user);
+    jest.spyOn(User, 'findOneBy').mockResolvedValueOnce(user2);
+    jest.spyOn(user2, 'softRemove').mockImplementation(async () => {
+      user2.deletedAt = new Date();
+      return user2;
+    });
+
+    return request(app.getHttpServer())
+      .delete(`/users/${user2.id}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${access_token}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          user: JSON.parse(JSON.stringify(user2.toPlain())),
+        });
+        expect(res.body.user.deletedAt).toBeTruthy();
+      });
+  });
+
+  afterEach(async () => {
     await app.close();
   });
 });

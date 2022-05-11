@@ -56,7 +56,7 @@ describe('AuthController', () => {
       .expect({ user: user.toPlain() });
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await app.close();
   });
 });

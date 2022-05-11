@@ -7,10 +7,12 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { instanceToPlain } from 'class-transformer';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { CheckPolicies, CheckPolicy } from '../auth/policies.guard';
+import {
+  CanFunction,
+  CheckPolicies,
+  CheckPolicy,
+} from '../auth/policies.guard';
 import { Action } from '../auth/actions';
 import { User } from '../auth/users.entity';
 
@@ -30,12 +32,13 @@ export class UsersController {
   @CheckPolicies({ action: Action.List, subject: User })
   async findAll() {
     const users = await this.usersService.findAll();
-    return instanceToPlain(users);
+
+    return User.toPlain(users);
   }
 
   @Get(':id')
   @CheckPolicies()
-  async findOne(@Param('id') id: string, @CheckPolicy() check) {
+  async findOne(@Param('id') id: string, @CheckPolicy() check: CanFunction) {
     const user = await this.usersService.findOne(Number(id));
 
     check(Action.Read, user);
@@ -44,12 +47,30 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @CheckPolicies()
+  async update(
+    @Param('id') id: string,
+    @Body() body: object,
+    @CheckPolicy() check: CanFunction,
+  ) {
+    const user = await this.usersService.findOne(Number(id));
+
+    check(Action.Update, user);
+
+    const userUpdated = await this.usersService.update(user, body);
+
+    return { user: userUpdated.toPlain() };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @CheckPolicies()
+  async remove(@Param('id') id: string, @CheckPolicy() check: CanFunction) {
+    const user = await this.usersService.findOne(Number(id));
+
+    check(Action.Delete, user);
+
+    const userRemoved = await this.usersService.remove(user);
+
+    return { user: userRemoved.toPlain() };
   }
 }

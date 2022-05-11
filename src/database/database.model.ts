@@ -10,6 +10,13 @@ export class DatabaseModel extends BaseEntity {
     return instanceToPlain(this, { ...options, excludePrefixes: ['__'] });
   }
 
+  static toPlain<T>(
+    object: T,
+    options?: ClassTransformOptions,
+  ): Record<string, any> {
+    return instanceToPlain(object, { ...options, excludePrefixes: ['__'] });
+  }
+
   static fromPlain<T extends DatabaseModel, V>(
     this: {
       new (): T;

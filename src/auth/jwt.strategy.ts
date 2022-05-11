@@ -29,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const roles = await user.roles;
       if (roles) {
         rules = roles.flatMap((role) =>
-          instanceToPlain(role.permissions).map((r) => {
+          User.toPlain(role.permissions).map((r) => {
             if (r.ownerField) {
               if (!r.conditions) r.conditions = {};
               r.conditions[r.ownerField] = user.id;

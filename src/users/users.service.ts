@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../auth/users.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
   async create(body: object): Promise<User> {
-    const user = User.fromPlain(body);
-
-    await user.save();
-
-    return user;
+    return User.fromPlain(body).save();
   }
 
   async findAll(): Promise<User[]> {
@@ -20,11 +15,13 @@ export class UsersService {
     return User.findOneBy({ id });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(user: User, body: object): Promise<User> {
+    User.merge(user, User.fromPlain(body));
+
+    return user.save();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(user: User): Promise<User> {
+    return user.softRemove();
   }
 }

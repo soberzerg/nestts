@@ -19,6 +19,8 @@ interface IPolicy {
   subject: any;
 }
 
+export type CanFunction = (action: string, subject: any) => void;
+
 @Injectable()
 export class PoliciesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
