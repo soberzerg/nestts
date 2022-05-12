@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../auth/users.entity';
+import { User } from './users.entity';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +16,7 @@ export class UsersService {
   }
 
   async update(user: User, body: object): Promise<User> {
-    User.merge(user, User.fromPlain(body));
+    user.merge(User.fromPlain(body));
 
     return user.save();
   }

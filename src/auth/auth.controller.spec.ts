@@ -2,7 +2,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './users.entity';
+import { User } from '../users/users.entity';
 import { AuthModule } from './auth.module';
 import { DatabaseModule } from '../database/database.module';
 

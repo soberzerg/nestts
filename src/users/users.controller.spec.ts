@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthModule } from '../auth/auth.module';
-import { User } from '../auth/users.entity';
+import { User } from './users.entity';
 import { Role } from '../auth/roles.entity';
 import { Permission } from '../auth/permissions.entity';
 import { Action } from '../auth/actions';
@@ -222,6 +222,7 @@ describe('UsersController', () => {
         expect(res.body).toEqual({
           user: expect.objectContaining({ login: newUser.login }),
         });
+        expect(res.body.user.password).toBeUndefined();
       });
   });
 

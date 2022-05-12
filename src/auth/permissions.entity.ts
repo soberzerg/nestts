@@ -17,7 +17,7 @@ export class Permission extends DatabaseModel {
   @Column('varchar', { length: 32 })
   name: string;
 
-  @Column('text')
+  @Column('text', { default: '' })
   reason: string;
 
   @Column('varchar', { length: 16 })

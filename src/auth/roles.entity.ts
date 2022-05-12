@@ -19,7 +19,7 @@ export class Role extends DatabaseModel {
   @Column('varchar', { length: 32 })
   name: string;
 
-  @ManyToMany(() => Permission)
+  @ManyToMany(() => Permission, { eager: true })
   @JoinTable()
   permissions: Permission[];
 

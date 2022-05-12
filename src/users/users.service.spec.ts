@@ -1,18 +1,123 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
+import { User } from './users.entity';
+import { DatabaseModule } from '../database/database.module';
+import { DatabaseService } from '../database/database.service';
 
 describe('UsersService', () => {
   let service: UsersService;
+  let dbService: DatabaseService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService],
+      imports: [DatabaseModule],
+      providers: [UsersService, DatabaseService],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
+    dbService = module.get<DatabaseService>(DatabaseService);
+
+    await dbService.onApplicationBootstrap();
+
+    await dbService.dataSource.query('TRUNCATE "user" CASCADE');
+    await dbService.dataSource.query('TRUNCATE "role" CASCADE');
+    await dbService.dataSource.query('TRUNCATE "permission" CASCADE');
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('should create user', async () => {
+    const body = {
+      login: 'abc@user.com',
+      password: 'qwe123',
+    };
+
+    const user = await service.create(body);
+    expect(user).toBeInstanceOf(User);
+    expect(user.login).toEqual(body.login);
+    await expect(
+      User.comparePassword(body.password, user.hashedPassword),
+    ).resolves.toBeTruthy();
+  });
+
+  it('should find all users', async () => {
+    const users = [
+      {
+        login: 'user1@user.com',
+        password: 'qwe1',
+      },
+      {
+        login: 'user2@user.com',
+        password: 'qwe2',
+      },
+    ];
+
+    const users1 = await Promise.all(
+      users.map((body) => User.fromPlain(body).save()),
+    );
+    expect(users1[0].login).toEqual(users[0].login);
+    expect(users1[0].password).toBeUndefined();
+    await expect(
+      User.comparePassword(users[0].password, users1[0].hashedPassword),
+    ).resolves.toBeTruthy();
+
+    const users2 = await service.findAll();
+    expect(users2).toHaveLength(users.length);
+    expect(users2).toEqual(expect.arrayContaining(users1));
+  });
+
+  it('should find one user', async () => {
+    const body = {
+      login: 'abc@user.com',
+      password: 'qwe123',
+    };
+    const user = await User.fromPlain(body).save();
+
+    const user1 = await service.findOne(user.id);
+    expect(user1).toBeInstanceOf(User);
+    expect(user1.login).toEqual(body.login);
+    await expect(
+      User.comparePassword(body.password, user1.hashedPassword),
+    ).resolves.toBeTruthy();
+  });
+
+  it('should update user login', async () => {
+    const body = {
+      login: 'abc@user.com',
+      password: 'qwe123',
+    };
+    const user = await User.fromPlain(body).save();
+
+    const body1 = {
+      login: 'abc2@user.com',
+    };
+    const user1 = await service.update(user, body1);
+
+    expect(user1).toBeInstanceOf(User);
+    expect(user1.login).toEqual(body1.login);
+    await expect(
+      User.comparePassword(body.password, user1.hashedPassword),
+    ).resolves.toBeTruthy();
+  });
+
+  it('should update user pasword', async () => {
+    const body = {
+      login: 'abc@user.com',
+      password: 'qwe123',
+    };
+    const user = await User.fromPlain(body).save();
+
+    const body1 = {
+      password: 'qwe456',
+    };
+    const user1 = await service.update(user, body1);
+
+    expect(user1).toBeInstanceOf(User);
+    expect(user1.login).toEqual(body.login);
+    await expect(
+      User.comparePassword(body1.password, user1.hashedPassword),
+    ).resolves.toBeTruthy();
+  });
+
+  afterEach(async () => {
+    await dbService.onModuleDestroy();
   });
 });

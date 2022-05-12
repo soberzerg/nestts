@@ -14,7 +14,7 @@ import {
   CheckPolicy,
 } from '../auth/policies.guard';
 import { Action } from '../auth/actions';
-import { User } from '../auth/users.entity';
+import { User } from './users.entity';
 
 @Controller('users')
 export class UsersController {

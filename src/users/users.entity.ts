@@ -7,12 +7,14 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  SaveOptions,
+  DeepPartial,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { Ability } from '@casl/ability';
 import { DatabaseModel } from '../database/database.model';
-import { Role } from './roles.entity';
+import { Role } from '../auth/roles.entity';
 
 @Entity()
 export class User extends DatabaseModel {
@@ -22,9 +24,12 @@ export class User extends DatabaseModel {
   @Column('varchar', { length: 32 })
   login: string;
 
-  @Column()
   @Exclude({ toPlainOnly: true })
   password: string;
+
+  @Column()
+  @Exclude({ toPlainOnly: true })
+  hashedPassword: string;
 
   @Column({ default: 'FALSE' })
   isSuperAdmin: boolean;
@@ -46,6 +51,24 @@ export class User extends DatabaseModel {
   @Exclude({ toPlainOnly: true })
   ability: Ability;
 
+  async save(options?: SaveOptions): Promise<this> {
+    if (this.password) {
+      this.hashedPassword = await User.hashPassword(this.password);
+      this.password = undefined;
+    }
+
+    return super.save(options);
+  }
+
+  merge(entityLike: DeepPartial<User>): User {
+    const user = User.merge(this, entityLike);
+    if (entityLike.password) {
+      user.password = entityLike.password;
+    }
+
+    return user;
+  }
+
   static async comparePassword(
     password: string,
     hash: string,
@@ -54,6 +77,20 @@ export class User extends DatabaseModel {
       bcrypt.compare(password, hash, (err, result) =>
         err ? reject(err) : resolve(result),
       );
+    });
+  }
+
+  static async hashPassword(password: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      bcrypt.genSalt(10, function (err, salt) {
+        if (err) {
+          reject(err);
+        } else {
+          bcrypt.hash(password, salt, (err, hash) =>
+            err ? reject(err) : resolve(hash),
+          );
+        }
+      });
     });
   }
 }
