@@ -1,10 +1,17 @@
 import { Ability } from '@casl/ability';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Action } from './actions';
 import { User } from '../users/users.entity';
 
 @Injectable()
 export class AuthService {
+  constructor(private jwtService: JwtService) {}
+
+  sign(sub: number) {
+    return this.jwtService.sign({ sub });
+  }
+
   async validateUser(
     login: string,
     plainPassword: string,

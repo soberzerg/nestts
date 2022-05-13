@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { DatabaseModule } from '../database/database.module';
 import { DatabaseService } from '../database/database.service';
+import { UsersModule } from './users.module';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -10,14 +11,13 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule],
-      providers: [UsersService, DatabaseService],
+      imports: [DatabaseModule, UsersModule],
     }).compile();
 
-    service = module.get<UsersService>(UsersService);
     dbService = module.get<DatabaseService>(DatabaseService);
+    service = module.get<UsersService>(UsersService);
 
-    await dbService.onApplicationBootstrap();
+    await dbService.onModuleInit();
 
     await dbService.dataSource.query('TRUNCATE "user" CASCADE');
     await dbService.dataSource.query('TRUNCATE "role" CASCADE');

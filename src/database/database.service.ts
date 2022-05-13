@@ -1,18 +1,18 @@
-import {
-  Injectable,
-  OnApplicationBootstrap,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 @Injectable()
-export class DatabaseService
-  implements OnApplicationBootstrap, OnModuleDestroy
-{
+export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   dataSource: DataSource;
 
-  async onApplicationBootstrap(): Promise<void> {
+  async onModuleInit(): Promise<void> {
     return new Promise((resolve, reject) => {
+      const entities = [
+        process.env.NODE_ENV === 'test'
+          ? '**/*.entity{.ts,.js}'
+          : 'dist/**/*.entity{.ts,.js}',
+      ];
+
       this.dataSource = new DataSource({
         type: 'postgres',
         host: 'localhost',
@@ -20,7 +20,7 @@ export class DatabaseService
         username: 'me',
         password: 'password',
         database: 'api',
-        entities: ['**/*.entity.ts'],
+        entities,
         synchronize: true,
       });
 

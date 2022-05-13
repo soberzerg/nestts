@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Ability } from '@casl/ability';
-import { AuthService } from './auth.service';
-import { Role } from './roles.entity';
-import { Permission } from './permissions.entity';
-import { Action } from './actions';
 import { DatabaseModule } from '../database/database.module';
 import { DatabaseService } from '../database/database.service';
 import { User } from '../users/users.entity';
+import { Action } from './actions';
+import { AuthModule } from './auth.module';
+import { AuthService } from './auth.service';
+import { Role } from './roles.entity';
+import { Permission } from './permissions.entity';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -14,14 +15,13 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule],
-      providers: [AuthService, DatabaseService],
+      imports: [DatabaseModule, AuthModule],
     }).compile();
 
-    service = module.get<AuthService>(AuthService);
     dbService = module.get<DatabaseService>(DatabaseService);
+    service = module.get<AuthService>(AuthService);
 
-    await dbService.onApplicationBootstrap();
+    await dbService.onModuleInit();
 
     await dbService.dataSource.query('TRUNCATE "user" CASCADE');
     await dbService.dataSource.query('TRUNCATE "role" CASCADE');

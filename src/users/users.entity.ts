@@ -27,7 +27,7 @@ export class User extends DatabaseModel {
   @Exclude({ toPlainOnly: true })
   password: string;
 
-  @Column()
+  @Column({ nullable: true })
   @Exclude({ toPlainOnly: true })
   hashedPassword: string;
 

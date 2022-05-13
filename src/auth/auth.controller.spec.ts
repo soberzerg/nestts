@@ -1,14 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
+import { DatabaseModule } from '../database/database.module';
 import { User } from '../users/users.entity';
 import { AuthModule } from './auth.module';
-import { DatabaseModule } from '../database/database.module';
+import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
   let app: INestApplication;
-  let jwtService: JwtService;
+  let authService: AuthService;
 
   const user = new User();
   user.id = 1;
@@ -17,10 +17,10 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule, DatabaseModule],
+      imports: [DatabaseModule, AuthModule],
     }).compile();
 
-    jwtService = module.get<JwtService>(JwtService);
+    authService = module.get<AuthService>(AuthService);
 
     app = module.createNestApplication();
     app.enableShutdownHooks();
@@ -28,8 +28,7 @@ describe('AuthController', () => {
   });
 
   it(`/POST auth/login`, () => {
-    const payload = { sub: user.id };
-    const access_token = jwtService.sign(payload);
+    const access_token = authService.sign(user.id);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
     jest.spyOn(User, 'comparePassword').mockResolvedValue(true);
@@ -43,8 +42,7 @@ describe('AuthController', () => {
   });
 
   it(`/GET profile`, () => {
-    const payload = { sub: user.id };
-    const access_token = jwtService.sign(payload);
+    const access_token = authService.sign(user.id);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
 
