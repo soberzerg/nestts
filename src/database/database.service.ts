@@ -3,7 +3,23 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
+  private prefix: string;
+
   dataSource: DataSource;
+
+  async initTest(name: string, tables: string[]): Promise<void> {
+    this.prefix = `test_${name}_`;
+
+    await this.onModuleInit();
+
+    await Promise.all(
+      tables.map((table) =>
+        this.dataSource.query(
+          `TRUNCATE "test_${name}_${table}" RESTART IDENTITY CASCADE`,
+        ),
+      ),
+    );
+  }
 
   async onModuleInit(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -16,12 +32,13 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.dataSource = new DataSource({
         type: 'postgres',
         host: 'localhost',
-        port: 54320,
+        port: 54321,
         username: 'me',
         password: 'password',
         database: 'api',
         entities,
         synchronize: true,
+        entityPrefix: this.prefix,
       });
 
       this.dataSource

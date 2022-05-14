@@ -17,11 +17,7 @@ describe('UsersService', () => {
     dbService = module.get<DatabaseService>(DatabaseService);
     service = module.get<UsersService>(UsersService);
 
-    await dbService.onModuleInit();
-
-    await dbService.dataSource.query('TRUNCATE "user" CASCADE');
-    await dbService.dataSource.query('TRUNCATE "role" CASCADE');
-    await dbService.dataSource.query('TRUNCATE "permission" CASCADE');
+    await dbService.initTest('users', ['user', 'role', 'permission']);
   });
 
   it('should create user', async () => {
@@ -114,6 +110,23 @@ describe('UsersService', () => {
     expect(user1.login).toEqual(body.login);
     await expect(
       User.comparePassword(body1.password, user1.hashedPassword),
+    ).resolves.toBeTruthy();
+  });
+
+  it('should remove user', async () => {
+    const body = {
+      login: 'abc@user.com',
+      password: 'qwe123',
+    };
+    const user = await User.fromPlain(body).save();
+
+    const user1 = await service.remove(user);
+
+    expect(user1).toBeInstanceOf(User);
+    expect(user1.login).toEqual(body.login);
+    expect(user1.deletedAt).toBeTruthy();
+    await expect(
+      User.comparePassword(body.password, user1.hashedPassword),
     ).resolves.toBeTruthy();
   });
 

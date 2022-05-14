@@ -9,7 +9,7 @@ import {
   JoinTable,
 } from 'typeorm';
 import { DatabaseModel } from '../database/database.model';
-import { Permission } from './permissions.entity';
+import { Permission } from '../auth/permissions.entity';
 
 @Entity()
 export class Role extends DatabaseModel {

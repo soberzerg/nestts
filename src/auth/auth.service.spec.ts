@@ -6,7 +6,7 @@ import { User } from '../users/users.entity';
 import { Action } from './actions';
 import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
-import { Role } from './roles.entity';
+import { Role } from '../roles/roles.entity';
 import { Permission } from './permissions.entity';
 
 describe('AuthService', () => {
@@ -21,11 +21,7 @@ describe('AuthService', () => {
     dbService = module.get<DatabaseService>(DatabaseService);
     service = module.get<AuthService>(AuthService);
 
-    await dbService.onModuleInit();
-
-    await dbService.dataSource.query('TRUNCATE "user" CASCADE');
-    await dbService.dataSource.query('TRUNCATE "role" CASCADE');
-    await dbService.dataSource.query('TRUNCATE "permission" CASCADE');
+    await dbService.initTest('auth', ['user', 'role', 'permission']);
   });
 
   it('should validate user', async () => {

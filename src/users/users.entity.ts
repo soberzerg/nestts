@@ -14,7 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { Ability } from '@casl/ability';
 import { DatabaseModel } from '../database/database.model';
-import { Role } from '../auth/roles.entity';
+import { Role } from '../roles/roles.entity';
 
 @Entity()
 export class User extends DatabaseModel {

@@ -1,4 +1,5 @@
 # compiled output
+/.docker/data
 /dist
 /node_modules
 
@@ -34,3 +35,6 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# local config
+.env
