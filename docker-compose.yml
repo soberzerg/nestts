@@ -1,5 +1,9 @@
 version: '3'
 
+networks:
+  backend:
+    driver: bridge
+
 services:
   # postgres
   database:
@@ -16,7 +20,33 @@ services:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     networks:
+      - backend
       - default
+    profiles:
+      - debug
+      - stage
+      - prod
+
+  # REST API
+  app:
+    container_name: '${DOCKER_CONTAINER_APP}'
+    build:
+      context: ./
+      dockerfile: ./.docker/app/Dockerfile
+    restart: always
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - /var/www/node_modules
+      - resources:/resources:ro
+    links:
+      - database
+    networks:
+      - backend
+      - default
+    profiles:
+      - stage
+      - prod
 
 volumes:
   resources:
