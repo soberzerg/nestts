@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 
-if [ ! -f .env ]
+echo load .env
+if [ -f .env ]
 then
-  export $(cat .env | xargs)
+  export $(echo $(cat .env | xargs))
 fi
 
+echo git pull
 git pull
 
-docker-compose down
-docker-compose build app
-docker-compose --profile $SRV_PROFILE up -d
+echo docker compose --profile $SRV_PROFILE down
+docker compose --profile $SRV_PROFILE down
+
+echo docker compose --profile $SRV_PROFILE build app
+docker compose --profile $SRV_PROFILE build app
+
+echo docker compose --profile $SRV_PROFILE up -d
+docker compose --profile $SRV_PROFILE up -d

@@ -1,4 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -6,6 +7,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private prefix: string;
 
   dataSource: DataSource;
+
+  constructor(private configService: ConfigService) {}
 
   async initTest(name: string, tables: string[]): Promise<void> {
     this.prefix = `test_${name}_`;
@@ -31,11 +34,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
       this.dataSource = new DataSource({
         type: 'postgres',
-        host: 'localhost',
-        port: 54321,
-        username: 'me',
-        password: 'password',
-        database: 'api',
+        host: this.configService.get<string>('DB_HOST', 'localhost'),
+        port: this.configService.get<number>('DB_PORT', 5432),
+        username: this.configService.get<string>('DB_USERNAME', 'me'),
+        password: this.configService.get<string>('DB_PASSWORD', 'password'),
+        database: this.configService.get<string>('DB_DATABASE', 'api'),
         entities,
         synchronize: true,
         entityPrefix: this.prefix,

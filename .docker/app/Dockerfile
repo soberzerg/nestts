@@ -6,6 +6,6 @@ COPY . /var/www/
 
 WORKDIR /var/www
 
-RUN cd /var/www && yarn
+RUN cd /var/www && yarn && yarn build
 
 CMD ["yarn", "start:prod"]
