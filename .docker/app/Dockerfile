@@ -8,4 +8,6 @@ WORKDIR /var/www
 
 RUN cd /var/www && yarn && yarn build
 
+EXPOSE 3000
+
 CMD ["yarn", "start:prod"]
