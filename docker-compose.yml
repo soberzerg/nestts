@@ -42,6 +42,8 @@ services:
       - resources:/resources:ro
     links:
       - database
+    ports:
+      - '${APP_PORT}:3000'
     networks:
       - backend
       - default
