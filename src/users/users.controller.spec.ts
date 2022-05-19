@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UsersController } from './users.controller';
@@ -18,7 +19,7 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule, DatabaseModule],
+      imports: [ConfigModule.forRoot(), AuthModule, DatabaseModule],
       controllers: [UsersController],
       providers: [UsersService],
     }).compile();
@@ -42,14 +43,16 @@ describe('UsersController', () => {
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(usersService, 'findAll').mockResolvedValue([user]);
+    jest
+      .spyOn(usersService, 'findAll')
+      .mockResolvedValue({ total: 1, results: [user] });
 
     return request(app.getHttpServer())
       .get('/users')
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
-      .expect([user.toPlain()]);
+      .expect({ total: 1, limit: 10, offset: 0, results: [user.toPlain()] });
   });
 
   it(`/GET /users by any user`, () => {
@@ -62,7 +65,6 @@ describe('UsersController', () => {
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(usersService, 'findAll').mockResolvedValue([user]);
 
     return request(app.getHttpServer())
       .get('/users')
@@ -91,7 +93,6 @@ describe('UsersController', () => {
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(usersService, 'findAll').mockResolvedValue([user]);
 
     return request(app.getHttpServer())
       .get('/users')
@@ -124,14 +125,21 @@ describe('UsersController', () => {
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(usersService, 'findAll').mockResolvedValue([user, user2]);
+    jest
+      .spyOn(usersService, 'findAll')
+      .mockResolvedValue({ total: 2, results: [user, user2] });
 
     return request(app.getHttpServer())
       .get('/users')
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
-      .expect([user.toPlain(), user2.toPlain()]);
+      .expect({
+        total: 2,
+        limit: 10,
+        offset: 0,
+        results: [user.toPlain(), user2.toPlain()],
+      });
   });
 
   it(`/GET /users/:id by user with read permission`, () => {

@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
 import { User } from '../users/users.entity';
@@ -17,7 +18,7 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule, AuthModule],
+      imports: [ConfigModule.forRoot(), DatabaseModule, AuthModule],
     }).compile();
 
     authService = module.get<AuthService>(AuthService);

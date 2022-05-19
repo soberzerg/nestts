@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Ability } from '@casl/ability';
 import { DatabaseModule } from '../database/database.module';
@@ -10,12 +11,14 @@ import { Role } from '../roles/roles.entity';
 import { Permission } from './permissions.entity';
 
 describe('AuthService', () => {
+  jest.setTimeout(30000);
+
   let service: AuthService;
   let dbService: DatabaseService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule, AuthModule],
+      imports: [ConfigModule.forRoot(), DatabaseModule, AuthModule],
     }).compile();
 
     dbService = module.get<DatabaseService>(DatabaseService);

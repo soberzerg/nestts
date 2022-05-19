@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { RolesController } from './roles.controller';
@@ -18,7 +19,7 @@ describe('RolesController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule, DatabaseModule],
+      imports: [ConfigModule.forRoot(), AuthModule, DatabaseModule],
       controllers: [RolesController],
       providers: [RolesService],
     }).compile();

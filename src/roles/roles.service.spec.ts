@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RolesService } from './roles.service';
 import { Role } from '../roles/roles.entity';
@@ -6,12 +7,14 @@ import { DatabaseService } from '../database/database.service';
 import { RolesModule } from './roles.module';
 
 describe('RolesService', () => {
+  jest.setTimeout(30000);
+
   let service: RolesService;
   let dbService: DatabaseService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule, RolesModule],
+      imports: [ConfigModule.forRoot(), DatabaseModule, RolesModule],
     }).compile();
 
     dbService = module.get<DatabaseService>(DatabaseService);

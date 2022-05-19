@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
@@ -6,12 +7,14 @@ import { DatabaseService } from '../database/database.service';
 import { UsersModule } from './users.module';
 
 describe('UsersService', () => {
+  jest.setTimeout(30000);
+
   let service: UsersService;
   let dbService: DatabaseService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseModule, UsersModule],
+      imports: [ConfigModule.forRoot(), DatabaseModule, UsersModule],
     }).compile();
 
     dbService = module.get<DatabaseService>(DatabaseService);
@@ -56,8 +59,9 @@ describe('UsersService', () => {
     ).resolves.toBeTruthy();
 
     const users2 = await service.findAll();
-    expect(users2).toHaveLength(users.length);
-    expect(users2).toEqual(expect.arrayContaining(users1));
+    expect(users2.total).toEqual(users.length);
+    expect(users2.results).toHaveLength(users.length);
+    expect(users2.results).toEqual(expect.arrayContaining(users1));
   });
 
   it('should find one user', async () => {

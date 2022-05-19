@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { FindManyOptions } from 'typeorm';
 import { User } from './users.entity';
 
 @Injectable()
@@ -7,8 +8,11 @@ export class UsersService {
     return User.fromPlain(body).save();
   }
 
-  async findAll(): Promise<User[]> {
-    return User.find();
+  async findAll(options?: FindManyOptions<User>) {
+    const total = await User.count(options);
+    const results = await User.find(options);
+
+    return { total, results };
   }
 
   async findOne(id: number): Promise<User> {
