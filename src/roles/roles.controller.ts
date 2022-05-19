@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import {
   CanFunction,
@@ -17,6 +18,7 @@ import { Action } from '../auth/actions';
 import { Role } from './roles.entity';
 
 @Controller('roles')
+@ApiBearerAuth()
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 

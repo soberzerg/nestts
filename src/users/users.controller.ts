@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import {
   CanFunction,
@@ -24,6 +24,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { UserDto } from './dto/user.dto';
 
 @Controller('users')
+@ApiBearerAuth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

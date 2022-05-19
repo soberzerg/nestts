@@ -12,6 +12,7 @@ async function bootstrap() {
     .setTitle('API docs')
     .setDescription('REST API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     extraModels: [PaginatedResponseDto],
