@@ -13,6 +13,8 @@ import { Action } from '../auth/actions';
 import { DatabaseModule } from '../database/database.module';
 
 describe('UsersController', () => {
+  jest.setTimeout(30000);
+
   let app: INestApplication;
   let jwtService: JwtService;
   let usersService: UsersService;
@@ -24,12 +26,12 @@ describe('UsersController', () => {
       providers: [UsersService],
     }).compile();
 
-    jwtService = module.get<JwtService>(JwtService);
-    usersService = module.get<UsersService>(UsersService);
-
     app = module.createNestApplication();
     app.enableShutdownHooks();
     await app.init();
+
+    jwtService = module.get<JwtService>(JwtService);
+    usersService = module.get<UsersService>(UsersService);
   });
 
   it(`/GET /users by SuperAdmin`, () => {

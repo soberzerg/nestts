@@ -8,6 +8,8 @@ import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
+  jest.setTimeout(30000);
+
   let app: INestApplication;
   let authService: AuthService;
 
@@ -21,11 +23,11 @@ describe('AuthController', () => {
       imports: [ConfigModule.forRoot(), DatabaseModule, AuthModule],
     }).compile();
 
-    authService = module.get<AuthService>(AuthService);
-
     app = module.createNestApplication();
     app.enableShutdownHooks();
     await app.init();
+
+    authService = module.get<AuthService>(AuthService);
   });
 
   it(`/POST auth/login`, () => {

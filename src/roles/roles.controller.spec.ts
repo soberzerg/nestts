@@ -13,6 +13,8 @@ import { Action } from '../auth/actions';
 import { DatabaseModule } from '../database/database.module';
 
 describe('RolesController', () => {
+  jest.setTimeout(30000);
+
   let app: INestApplication;
   let jwtService: JwtService;
   let rolesService: RolesService;
@@ -24,12 +26,12 @@ describe('RolesController', () => {
       providers: [RolesService],
     }).compile();
 
-    jwtService = module.get<JwtService>(JwtService);
-    rolesService = module.get<RolesService>(RolesService);
-
     app = module.createNestApplication();
     app.enableShutdownHooks();
     await app.init();
+
+    jwtService = module.get<JwtService>(JwtService);
+    rolesService = module.get<RolesService>(RolesService);
   });
 
   it(`/GET /roles by SuperAdmin`, () => {
