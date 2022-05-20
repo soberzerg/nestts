@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 import { Role } from './roles.entity';
 
 @Injectable()
 export class RolesService {
-  async create(body: object): Promise<Role> {
+  async create(body: CreateRoleDto): Promise<Role> {
     return Role.fromPlain(body).save();
   }
 
@@ -19,7 +21,7 @@ export class RolesService {
     return Role.findOneBy({ id });
   }
 
-  async update(role: Role, body: object): Promise<Role> {
+  async update(role: Role, body: UpdateRoleDto): Promise<Role> {
     Role.merge(role, Role.fromPlain(body));
 
     return role.save();

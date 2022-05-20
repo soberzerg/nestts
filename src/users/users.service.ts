@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './users.entity';
 
 @Injectable()
 export class UsersService {
-  async create(body: object): Promise<User> {
+  async create(body: CreateUserDto): Promise<User> {
     return User.fromPlain(body).save();
   }
 
@@ -19,7 +21,7 @@ export class UsersService {
     return User.findOneBy({ id });
   }
 
-  async update(user: User, body: object): Promise<User> {
+  async update(user: User, body: UpdateUserDto): Promise<User> {
     user.merge(User.fromPlain(body));
 
     return user.save();
