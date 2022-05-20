@@ -52,7 +52,7 @@ describe('UsersController', () => {
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
-      .expect({ total: 1, limit: 10, offset: 0, results: [user.toPlain()] });
+      .expect({ total: 1, take: 10, skip: 0, results: [user.toPlain()] });
   });
 
   it(`/GET /users by any user`, () => {
@@ -136,8 +136,8 @@ describe('UsersController', () => {
       .expect(200)
       .expect({
         total: 2,
-        limit: 10,
-        offset: 0,
+        take: 10,
+        skip: 0,
         results: [user.toPlain(), user2.toPlain()],
       });
   });

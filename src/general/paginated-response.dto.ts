@@ -5,10 +5,10 @@ export class PaginatedResponseDto<TData> {
   total: number;
 
   @ApiProperty()
-  limit: number;
+  take: number;
 
   @ApiProperty()
-  offset: number;
+  skip: number;
 
   results: TData[];
 }

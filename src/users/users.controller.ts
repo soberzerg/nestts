@@ -8,7 +8,12 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import {
   CanFunction,
@@ -22,8 +27,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserDto } from './dto/user.dto';
+import { PaginatedRequestDto } from '../general/paginated-request.dto';
 
 @Controller('users')
+@ApiTags('users')
 @ApiBearerAuth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -56,18 +63,18 @@ export class UsersController {
     },
   })
   async findAll(
-    @Query('offset') offset = 0,
-    @Query('limit') limit = 10,
+    @Query() query: PaginatedRequestDto,
   ): Promise<PaginatedResponseDto<UserDto>> {
+    const { take = 10, skip = 0 } = query;
     const { total, results } = await this.usersService.findAll({
-      take: limit,
-      skip: offset,
+      take,
+      skip,
     });
 
     return {
       total,
-      limit,
-      offset,
+      take,
+      skip,
       results: User.toPlain(results) as UserDto[],
     };
   }

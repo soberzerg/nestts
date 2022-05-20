@@ -51,8 +51,9 @@ describe('RolesService', () => {
     expect(roles1[0].name).toEqual(roles[0].name);
 
     const roles2 = await service.findAll();
-    expect(roles2).toHaveLength(roles.length);
-    expect(roles2).toEqual(expect.arrayContaining(roles1));
+    expect(roles2.total).toEqual(roles.length);
+    expect(roles2.results).toHaveLength(roles.length);
+    expect(roles2.results).toEqual(expect.arrayContaining(roles1));
   });
 
   it('should find one role', async () => {

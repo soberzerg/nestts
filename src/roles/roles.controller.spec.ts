@@ -47,14 +47,16 @@ describe('RolesController', () => {
     role.name = 'role-name';
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(rolesService, 'findAll').mockResolvedValue([role]);
+    jest
+      .spyOn(rolesService, 'findAll')
+      .mockResolvedValue({ total: 1, results: [role] });
 
     return request(app.getHttpServer())
       .get('/roles')
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
-      .expect([role.toPlain()]);
+      .expect({ total: 1, take: 10, skip: 0, results: [role.toPlain()] });
   });
 
   it(`/GET /roles by any user`, () => {
@@ -71,7 +73,6 @@ describe('RolesController', () => {
     role.name = 'role-name';
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(rolesService, 'findAll').mockResolvedValue([role]);
 
     return request(app.getHttpServer())
       .get('/roles')
@@ -99,7 +100,6 @@ describe('RolesController', () => {
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(rolesService, 'findAll').mockResolvedValue([role]);
 
     return request(app.getHttpServer())
       .get('/roles')
@@ -130,14 +130,21 @@ describe('RolesController', () => {
     const access_token = jwtService.sign(payload);
 
     jest.spyOn(User, 'findOneBy').mockResolvedValue(user);
-    jest.spyOn(rolesService, 'findAll').mockResolvedValue([role, role2]);
+    jest
+      .spyOn(rolesService, 'findAll')
+      .mockResolvedValue({ total: 2, results: [role, role2] });
 
     return request(app.getHttpServer())
       .get('/roles')
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${access_token}`)
       .expect(200)
-      .expect([role.toPlain(), role2.toPlain()]);
+      .expect({
+        total: 2,
+        take: 10,
+        skip: 0,
+        results: [role.toPlain(), role2.toPlain()],
+      });
   });
 
   it(`/GET /roles/:id by user with read permission`, () => {
