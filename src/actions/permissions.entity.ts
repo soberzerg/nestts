@@ -23,7 +23,7 @@ export class Permission extends DatabaseModel {
   @Column('varchar', { length: 16 })
   action: string;
 
-  @Column('varchar', { length: 16 })
+  @Column('varchar', { length: 32 })
   subject: string;
 
   @Column('varchar', { length: 16, nullable: true })

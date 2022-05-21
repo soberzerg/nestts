@@ -28,7 +28,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return new Promise((resolve, reject) => {
       const entities = [
         process.env.NODE_ENV === 'test'
-          ? '**/*.entity{.ts,.js}'
+          ? 'src/**/*.entity.ts'
           : 'dist/**/*.entity{.ts,.js}',
       ];
 
