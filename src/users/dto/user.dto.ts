@@ -6,4 +6,16 @@ export class UserDto {
 
   @ApiProperty()
   login: string;
+
+  @ApiProperty()
+  isSuperAdmin: boolean;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+
+  @ApiProperty()
+  deletedAt: Date;
 }
