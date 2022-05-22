@@ -6,7 +6,7 @@ import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
-import { PermissionsModule } from './actions/permissions.module';
+import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 
 @Module({

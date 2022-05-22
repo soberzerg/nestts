@@ -8,7 +8,7 @@ import { Action } from './actions';
 import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
 import { Role } from '../roles/roles.entity';
-import { Permission } from '../actions/permissions.entity';
+import { Permission } from '../permissions/permissions.entity';
 
 describe('AuthService', () => {
   jest.setTimeout(30000);

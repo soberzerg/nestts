@@ -8,7 +8,7 @@ import { RolesService } from './roles.service';
 import { AuthModule } from '../auth/auth.module';
 import { User } from '../users/users.entity';
 import { Role } from './roles.entity';
-import { Permission } from '../actions/permissions.entity';
+import { Permission } from '../permissions/permissions.entity';
 import { Action } from '../auth/actions';
 import { DatabaseModule } from '../database/database.module';
 
