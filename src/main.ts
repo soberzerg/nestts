@@ -12,7 +12,8 @@ async function bootstrap() {
 
   if (disableCors) {
     app.enableCors({
-      origin: false,
+      origin: true,
+      credentials: true,
     });
   }
 
